@@ -8,7 +8,11 @@
     "megalinter",
     "package-lock.json",
     "report",
-    "**/*.yml"
+    "**/*.yml",
+    ".jscpd.json",
+    ".gitignore",
+    ".jscpd.json",
+    "renovate.json"
   ],
   "language": "en",
   "noConfigSearch": true,
