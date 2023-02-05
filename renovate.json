@@ -1,8 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base"
-  ],
+  "extends": ["config:base"],
   "labels": ["dependencies :scroll:", "auto :robot:"],
   "packageRules": [
     {
@@ -14,9 +12,7 @@
       "addLabels": ["optional", "auto :robot:"]
     }
   ],
-  "schedule": [
-    "before 2am"
-  ],
+  "schedule": ["before 2am"],
   "configMigration": true,
   "dependencyDashboardTitle": "chore(deps): dependency dashboard",
   "dependencyDashboardLabels": ["dependencies :scroll:", "auto :robot:"],

@@ -7,21 +7,20 @@ name: Stale Check
 
 on:
   schedule:
-  - cron: '37 20 * * *'
+    - cron: "37 20 * * *"
 
 jobs:
   stale:
-
     runs-on: ubuntu-latest
     permissions:
       issues: write
       pull-requests: write
 
     steps:
-    - uses: actions/stale@v7
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        stale-issue-message: 'This issue has grown stale due to inactivity. Remove `no-issue-activity` label or comment, or this will be closed in 7 days.'
-        stale-pr-message: 'This pull request has grown stale due to inactivity. Remove `no-pr-activity` label or comment, or this will be closed in 7 days.'
-        stale-issue-label: 'no-issue-activity'
-        stale-pr-label: 'no-pr-activity'
+      - uses: actions/stale@v7
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          stale-issue-message: "This issue has grown stale due to inactivity. Remove `no-issue-activity` label or comment, or this will be closed in 7 days."
+          stale-pr-message: "This pull request has grown stale due to inactivity. Remove `no-pr-activity` label or comment, or this will be closed in 7 days."
+          stale-issue-label: "no-issue-activity"
+          stale-pr-label: "no-pr-activity"
