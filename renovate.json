@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "labels": ["dependencies :scroll:", "auto :robot:"],
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["eslint"],
+      "labels": ["linting :memo:", "auto :robot:"]
+    },
+    {
+      "matchDepTypes": ["optionalDependencies"],
+      "addLabels": ["optional", "auto :robot:"]
+    }
+  ],
+  "schedule": [
+    "before 2am"
+  ],
+  "configMigration": true,
+  "dependencyDashboardTitle": "chore(deps): dependency dashboard",
+  "dependencyDashboardLabels": ["dependencies :scroll:", "auto :robot:"],
+  "automerge": true,
+  "platformAutomerge": true,
+  "automergeStrategy": "rebase"
+}
