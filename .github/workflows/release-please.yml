@@ -14,7 +14,7 @@ jobs:
         with:
           release-type: node
           token: ${{ secrets.ORG_PAT }}
-          package-name: 'npm-ci'
+          package-name: "npm-ci"
 
       - uses: actions/checkout@v3
 

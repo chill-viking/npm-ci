@@ -1,14 +1,14 @@
 name: npm-ci
-author: 'Peter Jokumsen'
-description: 'Install npm dependencies or use cached dependencies'
+author: "Peter Jokumsen"
+description: "Install npm dependencies or use cached dependencies"
 
 inputs:
   working_directory:
-    description: 'Working directory to use'
-    default: './'
+    description: "Working directory to use"
+    default: "./"
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Use node_modules from cache [npm]
       id: cache-nodemodules
