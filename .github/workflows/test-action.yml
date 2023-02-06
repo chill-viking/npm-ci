@@ -43,7 +43,7 @@ jobs:
   test-action:
     needs:
       - create-package
-    name: use action with test package
+    name: test action
     # create a matrix of node versions to test against
     strategy:
       matrix:
