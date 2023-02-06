@@ -1,0 +1,232 @@
+on:
+  workflow_call:
+    inputs:
+      node_major:
+        description: "Major version of node to be used"
+        type: string
+        required: true
+      runs_on:
+        description: "Operating system to run on"
+        type: string
+        required: true
+      expected_package:
+        description: "Expected package folder to be in node_modules"
+        type: string
+        default: "@chill-viking"
+
+name: Confirm caching is faster
+
+jobs:
+  prepare-for-cache:
+    runs-on: ubuntu-latest
+    name: "[prepare]"
+    steps:
+      - name: Download test folder
+        uses: actions/download-artifact@v3
+        with:
+          name: test_package
+          path: testing
+
+      - name: Cache buster
+        shell: pwsh
+        run: |
+          cd testing
+          npm version 1.1.${{ inputs.node_major }}${{ github.run_number }} --no-git-tag-version
+          $lockFile = Get-Content -Path .\package-lock.json -Raw | ConvertFrom-Json -AsHashtable
+          $lockFile.name = "testing action for node ${{ inputs.node_major }}.x on ${{ inputs.runs_on }} #${{ github.run_number }}"
+          $lockFile.version = "1.1.${{ inputs.node_major }}${{ github.run_number }}"
+          $lockFile | ConvertTo-Json -Depth 10 | Set-Content -Path .\package-lock.json
+
+          if (Test-Path node_modules)
+          {
+            Write-Host "::error::node_modules exists, it should not"
+            exit 1
+          }
+          else
+          {
+            Write-Host "node_modules does not exist, able to test action"
+          }
+
+      - name: Upload cache-busted test folder
+        uses: actions/upload-artifact@v3
+        with:
+          name: test_package_node_${{ inputs.node_major }}_${{ inputs.runs_on }}
+          path: testing
+
+  pre-cache-run:
+    runs-on: ${{ inputs.runs_on }}
+    name: "[pre-cache]"
+    needs: prepare-for-cache
+    outputs:
+      duration_ms: ${{ steps.timer-end.outputs.duration_ms }}
+      key_used: ${{ steps.cache-key.outputs.key }}
+    steps:
+      - name: "Use Node.js (${{ inputs.node_major }}.x)"
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.node_major }}.x
+
+      - name: Download test folder
+        uses: actions/download-artifact@v3
+        with:
+          name: test_package_node_${{ inputs.node_major }}_${{ inputs.runs_on }}
+          path: testing
+
+      - name: Get Cache Key
+        id: cache-key
+        shell: pwsh
+        run: |
+          $key = "${{ inputs.runs_on }}-${{ hashFiles('**/package-lock.json') }}"
+          Write-Output "key=${key}" >> $env:GITHUB_OUTPUT
+
+      - name: Download action
+        uses: actions/download-artifact@v3
+        with:
+          name: npm-ci
+          path: npm-ci
+
+      - name: start timer
+        id: timer-start
+        shell: pwsh
+        run: |
+          $date = Get-Date
+          $dateString = $date.ToString("yyyy-MM-dd HH:mm:ss.fff")
+          Write-Output "date=${dateString}" >> $env:GITHUB_OUTPUT
+
+      - name: using chill-viking/npm-ci
+        uses: ./npm-ci # Use action from local folder
+        with:
+          working_directory: testing
+
+      - name: end timer
+        id: timer-end
+        shell: pwsh
+        run: |
+          $startDate = [datetime]::ParseExact("${{ steps.timer-start.outputs.date }}", "yyyy-MM-dd HH:mm:ss.fff", $null)
+          $end = Get-Date
+          $totalMs = (New-TimeSpan $startDate $end).TotalMilliseconds
+          Write-Output "duration_ms=${totalMs}" >> $env:GITHUB_OUTPUT
+
+      - name: Check node_modules has package
+        shell: pwsh
+        run: |
+          # check that node_modules exists and the expected package is installed
+          $expected = "${{ inputs.expected_package }}"
+          cd testing
+          if (Test-Path "node_modules/${expected}")
+          {
+            Write-Host "node_modules exists and ${expected} installed"
+          }
+          else
+          {
+            Write-Host "::error::node_modules/${expected} was not created"
+            exit 1
+          }
+  post-cache-run:
+    runs-on: ${{ inputs.runs_on }}
+    needs:
+      - prepare-for-cache
+      - pre-cache-run
+    name: "[post-cache]"
+    outputs:
+      duration_ms: ${{ steps.timer-end.outputs.duration_ms }}
+      key_used: ${{ steps.cache-key.outputs.key }}
+    steps:
+      - name: "Use Node.js (${{ inputs.node_major }}.x)"
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.node_major }}.x
+
+      - name: Download test folder
+        uses: actions/download-artifact@v3
+        with:
+          name: test_package_node_${{ inputs.node_major }}_${{ inputs.runs_on }}
+          path: testing
+
+      - name: Get Cache Key
+        id: cache-key
+        shell: pwsh
+        run: |
+          $key = "${{ inputs.runs_on }}-${{ hashFiles('**/package-lock.json') }}"
+          Write-Output "key=${key}" >> $env:GITHUB_OUTPUT
+
+      - name: Download action
+        uses: actions/download-artifact@v3
+        with:
+          name: npm-ci
+          path: npm-ci
+
+      - name: start timer
+        id: timer-start
+        shell: pwsh
+        run: |
+          $date = Get-Date
+          $dateString = $date.ToString("yyyy-MM-dd HH:mm:ss.fff")
+          Write-Output "date=${dateString}" >> $env:GITHUB_OUTPUT
+
+      - name: using chill-viking/npm-ci
+        uses: ./npm-ci # Use action from local folder
+        with:
+          working_directory: testing
+
+      - name: end timer
+        id: timer-end
+        shell: pwsh
+        run: |
+          $startDate = [datetime]::ParseExact("${{ steps.timer-start.outputs.date }}", "yyyy-MM-dd HH:mm:ss.fff", $null)
+          $end = Get-Date
+          $totalMs = (New-TimeSpan $startDate $end).TotalMilliseconds
+          Write-Output "duration_ms=${totalMs}" >> $env:GITHUB_OUTPUT
+
+      - name: Check node_modules has package
+        shell: pwsh
+        run: |
+          # check that node_modules exists and the expected package is installed
+          $expected = "${{ inputs.expected_package }}"
+          cd testing
+          if (Test-Path "node_modules/${expected}")
+          {
+            Write-Host "node_modules exists and ${expected} installed"
+          }
+          else
+          {
+            Write-Host "::error::node_modules/${expected} was not created"
+            exit 1
+          }
+
+  compare-times:
+    runs-on: ubuntu-latest
+    needs:
+      - pre-cache-run
+      - post-cache-run
+    name: "[compare]"
+    steps:
+      - name: Compare times
+        shell: pwsh
+        run: |
+          $preCacheKey = "${{ needs.pre-cache-run.outputs.key_used }}"
+          $postCacheKey = "${{ needs.post-cache-run.outputs.key_used }}"
+          if ($preCacheKey -ne $postCacheKey)
+          {
+              Write-Host "::error::pre-cache key [${preCacheKey}] was different to post-cache key [${postCacheKey}]"
+          }
+
+          $preCacheDuration = [Float]::Parse("${{ needs.pre-cache-run.outputs.duration_ms }}") 
+          $postCacheDuration = [Float]::Parse("${{ needs.post-cache-run.outputs.duration_ms }}")
+          $difference = $preCacheDuration - $postCacheDuration
+          $initialTitle = ":white_check_mark:"
+          $diffTitle = "faster"
+          $diffPercent = [Math]::Round(($difference / $preCacheDuration) * 100, 2)
+          if ($difference -lt 0)
+          {
+            Write-Host "::warning::post-cache duration [${postCacheDuration}ms] was slower than pre-cache duration [${preCacheDuration}ms]"
+            $diffTitle = "slower"
+            $initialTitle = ":warning:"
+          }
+
+          Write-Output "## ${initialTitle} Times for node ${{ inputs.node_major }}.x on ${{ matrix.os }}" >> $env:GITHUB_STEP_SUMMARY
+          Write-Output "| Step | Duration |" >> $env:GITHUB_STEP_SUMMARY
+          Write-Output "| --- | --- |" >> $env:GITHUB_STEP_SUMMARY
+          Write-Output "| pre-cache | ${preCacheDuration}ms |" >> $env:GITHUB_STEP_SUMMARY
+          Write-Output "| post-cache | ${postCacheDuration}ms |" >> $env:GITHUB_STEP_SUMMARY
+          Write-Output "| difference | ${diffPercent}% ${diffTitle} |" >> $env:GITHUB_STEP_SUMMARY

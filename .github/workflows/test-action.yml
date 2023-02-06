@@ -23,12 +23,11 @@ jobs:
           mkdir testing
           cd testing
           npm init -y
-          npm version 1.1.${{ github.run_number }}
-          npm install --save-dev typescript
+          npm install --save-dev @chill-viking/layout
           rm -rf node_modules
 
       - name: Upload testing as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: test_package
           path: testing
@@ -39,7 +38,7 @@ jobs:
           path: npm-ci
 
       - name: Upload action as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: npm-ci
           path: npm-ci
@@ -50,57 +49,20 @@ jobs:
     name: test action
     # create a matrix of node versions to test against
     strategy:
+      max-parallel: 3
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [14, 16, 18]
         os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Download test folder
-        uses: actions/download-artifact@v2
-        with:
-          name: test_package
-          path: testing
-
-      - name: Confirm node_modules is empty
-        shell: pwsh
-        run: |
-          cd testing
-          if (Test-Path node_modules)
-          {
-            Write-Host "::error::node_modules exists, it should not"
-            exit 1
-          }
-          else
-          {
-            Write-Host "node_modules does not exist, able to test action"
-          }
-
-      - name: Download action
-        uses: actions/download-artifact@v2
-        with:
-          name: npm-ci
-          path: npm-ci
-
-      - name: Use chill-viking/npm-ci
-        uses: ./npm-ci # Use action from local folder
-        with:
-          working_directory: testing
-
-      - name: Check node_modules has typescript package
-        shell: pwsh
-        run: |
-          cd testing
-          if (Test-Path node_modules/typescript)
-          {
-            Write-Host "node_modules exists and typescript installed"
-          }
-          else
-          {
-            Write-Host "::error::node_modules/typescript was not created"
-            exit 1
-          }
+        exclude:
+          - os: macos-latest
+            node-version: 14
+          - os: macos-latest
+            node-version: 16
+          - os: windows-latest
+            node-version: 14
+          - os: windows-latest
+            node-version: 16
+    uses: ./.github/workflows/run-action.yml
+    with:
+      node_major: ${{ matrix.node-version }}
+      runs_on: ${{ matrix.os }}
