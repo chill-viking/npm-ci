@@ -1,0 +1,102 @@
+name: Test chill-viking/npm-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  create-package:
+    runs-on: ubuntu-latest
+    name: init test package and upload action
+    steps:
+      - name: Create test package
+        run: |
+          mkdir testing
+          cd testing
+          npm init -y
+          npm version 1.1.${{ github.run_number }}
+          npm install --save-dev typescript
+          rm -rf node_modules
+
+      - name: Upload testing as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: test_package
+          path: testing
+
+      - name: Checkout latest version of action
+        uses: actions/checkout@v3
+        with:
+          path: npm-ci
+
+      - name: Upload action as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: npm-ci
+          path: npm-ci
+
+  test-action:
+    needs:
+      - create-package
+    name: use action with test package
+    # create a matrix of node versions to test against
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Download test folder
+        uses: actions/download-artifact@v2
+        with:
+          name: test_package
+          path: testing
+
+      - name: Confirm node_modules is empty
+        shell: pwsh
+        run: |
+          cd testing
+          if (Test-Path node_modules)
+          {
+            Write-Host "::error::node_modules exists, it should not"
+            exit 1
+          }
+          else
+          {
+            Write-Host "node_modules does not exist, able to test action"
+          }
+
+      - name: Download action
+        uses: actions/download-artifact@v2
+        with:
+          name: npm-ci
+          path: npm-ci
+
+      - name: Use chill-viking/npm-ci
+        uses: ./npm-ci # Use action from local folder
+        with:
+          working_directory: testing
+
+      - name: Check node_modules has typescript package
+        shell: pwsh
+        run: |
+          cd testing
+          if (Test-Path node_modules/typescript)
+          {
+            Write-Host "node_modules exists and typescript installed"
+          }
+          else
+          {
+            Write-Host "::error::node_modules/typescript was not created"
+            exit 1
+          }
