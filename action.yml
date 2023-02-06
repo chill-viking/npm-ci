@@ -17,11 +17,11 @@ runs:
         $input = "${{ inputs.working_directory }}"
         if ($input -notlike "*/")
         {
-          Write-Output "path='${input}/'" >> $env:GITHUB_OUTPUT
+          Write-Output "path=${input}/" >> $env:GITHUB_OUTPUT
         }
         else
         {
-          Write-Output "path='${input}'" >> $env:GITHUB_OUTPUT
+          Write-Output "path=${input}" >> $env:GITHUB_OUTPUT
         }
 
     - name: Use node_modules from cache [npm]
