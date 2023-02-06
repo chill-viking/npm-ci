@@ -18,9 +18,6 @@ The `latest` tag will be used for the latest release created, but specific versi
 
 ## Inputs
 
-| Name                | Description                                 | Required | Default |
-|---------------------|---------------------------------------------|----------|---------|
-| `working_directory` | The directory to run the workflow from. 1️⃣ | No       | `./`    |
-
-Notes:
-1️⃣ Make sure to suffix `working_directory` path with `/`, as `node_modules` will be appended to specify folder to be cached
+| Name                | Description                             | Required | Default |
+|---------------------|-----------------------------------------|----------|---------|
+| `working_directory` | The directory to run the workflow from. | No       | `./`    |

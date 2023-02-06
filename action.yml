@@ -10,14 +10,28 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Prepare working directory
+      id: working_directory
+      shell: pwsh
+      run: |
+        $input = "${{ inputs.working_directory }}"
+        if ($input -notlike "*/")
+        {
+          Write-Output "path='${input}/'" >> $env:GITHUB_OUTPUT
+        }
+        else
+        {
+          Write-Output "path='${input}'" >> $env:GITHUB_OUTPUT
+        }
+
     - name: Use node_modules from cache [npm]
-      id: cache-nodemodules
+      id: cache-node_modules
       uses: actions/cache@v3
       env:
         cache-name: cache-node-modules
       with:
         # caching node_modules
-        path: ${{ inputs.working_directory }}node_modules
+        path: ${{ steps.working_directory.outputs.path }}node_modules
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-build-${{ env.cache-name }}-
@@ -26,19 +40,20 @@ runs:
 
     - shell: pwsh
       name: Install dependencies
-      working_directory: ${{ inputs.working_directory }}
-      if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+      working-directory: ${{ steps.working_directory.outputs.path }}
+      if: steps.cache-node_modules.outputs.cache-hit != 'true'
       run: |
         npm ci
 
     - shell: pwsh
       name: Check path for cache
+      if: steps.cache-node_modules.outputs.cache-hit != 'true'
       run: |
-        if (Test-Path ${{ inputs.working_directory }}node_modules)
+        if (Test-Path ${{ steps.working_directory.outputs.path }}node_modules)
         {
-          Write-Output "node_modules found, will be cached"
+          Write-Output "node_modules found, should be cached"
         }
         else
         {
-          Write-Output "::warning title=node_modules not found::node_modules not found using path '${{ inputs.working_directory }}'"
+          Write-Output "::warning title=node_modules not found::node_modules not found using path '${{ steps.working_directory.outputs.path }}'"
         }
