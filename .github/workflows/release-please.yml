@@ -5,6 +5,10 @@ on:
 
 name: Release
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   release-please:
     runs-on: ubuntu-latest
@@ -19,19 +23,29 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: tag major and minor versions
+        shell: pwsh
         if: ${{ steps.release.outputs.release_created }}
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git remote add gh-token "https://${{ secrets.GITHUB_TOKEN }}@github.com/chill-viking/npm-ci.git"
+
+          ############################## Delete old tags if they exist
+
           git tag -d latest || true
-          git tag -d v${{ steps.release.outputs.major }} || true
-          git tag -d v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
+          $majorTag = "v${{ steps.release.outputs.major }}"
+          git tag -d $majorTag || true
+          $minorTag = "v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
+          git tag -d $minorTag || true
           git push origin :latest || true
-          git push origin :v${{ steps.release.outputs.major }} || true
-          git push origin :v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
-          git tag -a latest -m "Release latest using v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
-          git tag -a v${{ steps.release.outputs.major }} -m "Release v${{ steps.release.outputs.major }}"
-          git tag -a v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} -m "Release v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
-          git push origin v${{ steps.release.outputs.major }}
-          git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
+          git push origin :$majorTag || true
+          git push origin :$minorTag || true
+
+          ############################## Create tags
+
+          git tag -a latest -m "Release latest using ${minorTag}"
+          git tag -a $majorTag -m "Release ${majorTag}"
+          git tag -a $minorTag -m "Release ${minorTag}"
+          git push origin latest
+          git push origin $majorTag
+          git push origin $minorTag
