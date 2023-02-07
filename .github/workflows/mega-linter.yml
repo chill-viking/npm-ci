@@ -37,7 +37,7 @@ jobs:
         id: ml
         # You can override MegaLinter flavor used to have faster performances
         # More info at https://megalinter.io/flavors/
-        uses: oxsecurity/megalinter@v6
+        uses: oxsecurity/megalinter/flavors/javascript@v6.19.0
         env:
           # All available variables are described in documentation
           # https://megalinter.io/configuration/
@@ -47,7 +47,7 @@ jobs:
 
       # Upload MegaLinter artifacts
       - name: Archive production artifacts
-        if: ${{ success() }} || ${{ failure() }}
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: MegaLinter reports
