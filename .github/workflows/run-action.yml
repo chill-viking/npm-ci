@@ -4,7 +4,7 @@
 
 name: Run this action and confirm cache works
 
-on:
+on: # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       node_major:
@@ -216,7 +216,7 @@ jobs:
               Write-Host "::error::pre-cache key [${preCacheKey}] was different to post-cache key [${postCacheKey}]"
           }
 
-          $preCacheDuration = [Float]::Parse("${{ needs.pre-cache-run.outputs.duration_ms }}") 
+          $preCacheDuration = [Float]::Parse("${{ needs.pre-cache-run.outputs.duration_ms }}")
           $postCacheDuration = [Float]::Parse("${{ needs.post-cache-run.outputs.duration_ms }}")
           $difference = $preCacheDuration - $postCacheDuration
           $initialTitle = ":white_check_mark:"
