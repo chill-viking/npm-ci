@@ -1,3 +1,9 @@
+---
+# This workflow is meant to check that chill-viking/npm-ci works as expected
+# It is not meant to be used by anyone else
+
+name: Run this action and confirm cache works
+
 on:
   workflow_call:
     inputs:
@@ -13,8 +19,6 @@ on:
         description: "Expected package folder to be in node_modules"
         type: string
         default: "@chill-viking"
-
-name: Confirm caching is faster
 
 jobs:
   prepare-for-cache:
@@ -122,6 +126,7 @@ jobs:
             Write-Host "::error::node_modules/${expected} was not created"
             exit 1
           }
+
   post-cache-run:
     runs-on: ${{ inputs.runs_on }}
     needs:

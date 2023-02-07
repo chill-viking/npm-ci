@@ -1,3 +1,7 @@
+---
+# This is a composite action that installs npm dependencies or uses cached dependencies
+# To improve performance, it uses the cache action to cache the node_modules folder
+
 name: npm-ci
 author: "Peter Jokumsen"
 description: "Install npm dependencies or use cached dependencies"
