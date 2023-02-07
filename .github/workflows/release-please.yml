@@ -1,9 +1,13 @@
+---
+# This workflow will run release-please to create a release PR, and tag the release
+# when a PR is merged into main.
+
+name: Release
+
 on:
   push:
     branches:
       - main
-
-name: Release
 
 permissions:
   contents: write
