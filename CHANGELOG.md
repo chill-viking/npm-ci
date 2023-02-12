@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/chill-viking/npm-ci/compare/v1.1.0...v1.1.1) (2023-02-12)
+
+
+### Bug Fixes
+
+* **action:** add branding ([#13](https://github.com/chill-viking/npm-ci/issues/13)) ([edca944](https://github.com/chill-viking/npm-ci/commit/edca9443f76250095f955c93a1948f791d4733f3))
+
 ## [1.1.0](https://github.com/chill-viking/npm-ci/compare/v1.0.0...v1.1.0) (2023-02-12)
 
 
