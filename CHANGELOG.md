@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0](https://github.com/chill-viking/npm-ci/compare/v1.0.0...v1.1.0) (2023-02-12)
+
+
+### Features
+
+* **action:** include / suffix when not provided ([32e67b2](https://github.com/chill-viking/npm-ci/commit/32e67b272dc5db618d054c6fff3f5eac2cfd16be))
+
+
+### Bug Fixes
+
+* **action:** rename cache step ([7d08a2b](https://github.com/chill-viking/npm-ci/commit/7d08a2b1c9a7b4c6532eefc5f0c7a24832e61e96))
+* **action:** set path output correctly ([af25e3f](https://github.com/chill-viking/npm-ci/commit/af25e3fa4a6e1d951ee17ed19fb49885aaebd74f))
+
 ## 1.0.0 (2023-02-06)
 
 
