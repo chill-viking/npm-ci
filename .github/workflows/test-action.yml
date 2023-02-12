@@ -10,7 +10,7 @@ on: # yamllint disable-line rule:truthy
   pull_request:
     branches: [main]
   schedule:
-    - cron: '30 5,17 * * *'
+    - cron: "30 5,17 * * *"
 
 permissions:
   contents: write
