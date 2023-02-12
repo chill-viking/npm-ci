@@ -5,6 +5,9 @@
 name: npm-ci
 author: "Peter Jokumsen"
 description: "Install npm dependencies or use cached dependencies"
+branding:
+  icon: "arrow-down-circle"
+  color: "blue"
 
 inputs:
   working_directory:
