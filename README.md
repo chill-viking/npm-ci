@@ -37,6 +37,12 @@ steps:
 |---------------------|-----------------------------------------------------------------------------|----------|---------|
 | `working_directory` | The directory to install dependencies in (location of `package-lock.json`). | No       | `./`    |
 
+## Outputs
+
+| Name                  | Description                                                             |
+|-----------------------|-------------------------------------------------------------------------|
+| `restored_from_cache` | `true` if the dependencies were restored from cache, `false` otherwise. |
+
 ## Compatibility
 
 The following combinations of runner and Node.js version(s) are checked in the workflow [![Test chill-viking/npm-ci](https://github.com/chill-viking/npm-ci/actions/workflows/test-action.yml/badge.svg)](https://github.com/chill-viking/npm-ci/actions/workflows/test-action.yml)
