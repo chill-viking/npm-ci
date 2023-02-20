@@ -29,7 +29,7 @@ jobs:
           mkdir testing
           cd testing
           npm init -y
-          npm install --save-dev @chill-viking/layout
+          npm install --save @chill-viking/layout
           rm -rf node_modules
 
       - name: Upload testing as artifact
