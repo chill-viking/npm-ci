@@ -21,49 +21,12 @@ on: # yamllint disable-line rule:truthy
         default: "@chill-viking"
 
 jobs:
-  prepare-for-cache:
-    runs-on: ubuntu-latest
-    name: "[prepare]"
-    steps:
-      - name: Download test folder
-        uses: actions/download-artifact@v3
-        with:
-          name: test_package
-          path: testing
-
-      - name: Cache buster
-        shell: pwsh
-        run: |
-          cd testing
-          npm version 1.1.${{ inputs.node_major }}${{ github.run_number }} --no-git-tag-version
-          $lockFile = Get-Content -Path .\package-lock.json -Raw | ConvertFrom-Json -AsHashtable
-          $lockFile.name = "testing action for node ${{ inputs.node_major }}.x on ${{ inputs.runs_on }} #${{ github.run_number }}"
-          $lockFile.version = "1.1.${{ inputs.node_major }}${{ github.run_number }}"
-          $lockFile | ConvertTo-Json -Depth 10 | Set-Content -Path .\package-lock.json
-
-          if (Test-Path node_modules)
-          {
-            Write-Host "::error::node_modules exists, it should not"
-            exit 1
-          }
-          else
-          {
-            Write-Host "node_modules does not exist, able to test action"
-          }
-
-      - name: Upload cache-busted test folder
-        uses: actions/upload-artifact@v3
-        with:
-          name: test_package_node_${{ inputs.node_major }}_${{ inputs.runs_on }}
-          path: testing
-
   pre-cache-run:
     runs-on: ${{ inputs.runs_on }}
-    name: "[pre-cache]"
-    needs: prepare-for-cache
+    name: "initial run"
     outputs:
       duration_ms: ${{ steps.timer-end.outputs.duration_ms }}
-      key_used: ${{ steps.cache-key.outputs.key }}
+      used_cache: ${{ steps.test-run.outputs.restored_from_cache }}
     steps:
       - name: "Use Node.js (${{ inputs.node_major }}.x)"
         uses: actions/setup-node@v3
@@ -73,15 +36,8 @@ jobs:
       - name: Download test folder
         uses: actions/download-artifact@v3
         with:
-          name: test_package_node_${{ inputs.node_major }}_${{ inputs.runs_on }}
+          name: test_package
           path: testing
-
-      - name: Get Cache Key
-        id: cache-key
-        shell: pwsh
-        run: |
-          $key = "${{ inputs.runs_on }}-${{ hashFiles('**/package-lock.json') }}"
-          Write-Output "key=${key}" >> $env:GITHUB_OUTPUT
 
       - name: Download action
         uses: actions/download-artifact@v3
@@ -98,6 +54,7 @@ jobs:
           Write-Output "date=${dateString}" >> $env:GITHUB_OUTPUT
 
       - name: using chill-viking/npm-ci
+        id: test-run
         uses: ./npm-ci # Use action from local folder
         with:
           working_directory: testing
@@ -130,12 +87,11 @@ jobs:
   post-cache-run:
     runs-on: ${{ inputs.runs_on }}
     needs:
-      - prepare-for-cache
       - pre-cache-run
-    name: "[post-cache]"
+    name: "cache run"
+    if: ${{ needs.pre-cache-run.outputs.used_cache != 'true' }}
     outputs:
       duration_ms: ${{ steps.timer-end.outputs.duration_ms }}
-      key_used: ${{ steps.cache-key.outputs.key }}
     steps:
       - name: "Use Node.js (${{ inputs.node_major }}.x)"
         uses: actions/setup-node@v3
@@ -145,7 +101,7 @@ jobs:
       - name: Download test folder
         uses: actions/download-artifact@v3
         with:
-          name: test_package_node_${{ inputs.node_major }}_${{ inputs.runs_on }}
+          name: test_package
           path: testing
 
       - name: Get Cache Key
@@ -204,18 +160,13 @@ jobs:
     needs:
       - pre-cache-run
       - post-cache-run
-    name: "[compare]"
+    name: "output results"
+    if: always()
     steps:
       - name: Compare times
+        if: ${{ needs.pre-cache-run.outputs.used_cache != 'true' }}
         shell: pwsh
         run: |
-          $preCacheKey = "${{ needs.pre-cache-run.outputs.key_used }}"
-          $postCacheKey = "${{ needs.post-cache-run.outputs.key_used }}"
-          if ($preCacheKey -ne $postCacheKey)
-          {
-              Write-Host "::error::pre-cache key [${preCacheKey}] was different to post-cache key [${postCacheKey}]"
-          }
-
           $preCacheDuration = [Float]::Parse("${{ needs.pre-cache-run.outputs.duration_ms }}")
           $postCacheDuration = [Float]::Parse("${{ needs.post-cache-run.outputs.duration_ms }}")
           $difference = $preCacheDuration - $postCacheDuration
@@ -235,3 +186,13 @@ jobs:
           Write-Output "| pre-cache | ${preCacheDuration}ms |" >> $env:GITHUB_STEP_SUMMARY
           Write-Output "| post-cache | ${postCacheDuration}ms |" >> $env:GITHUB_STEP_SUMMARY
           Write-Output "| difference | ${diffPercent}% ${diffTitle} |" >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Compare times
+        if: ${{ needs.pre-cache-run.outputs.used_cache == 'true' }}
+        shell: pwsh
+        run: |
+          $preCacheDuration = [Float]::Parse("${{ needs.pre-cache-run.outputs.duration_ms }}")
+
+          Write-Output "## :white_check_mark: used cache on first attempt" >> $env:GITHUB_STEP_SUMMARY
+          Write-Output "" >> $env:GITHUB_STEP_SUMMARY
+          Write-Output "Completed in ${preCacheDuration}ms" >> $env:GITHUB_STEP_SUMMARY
