@@ -36,7 +36,7 @@ jobs:
       - name: Download test folder
         uses: actions/download-artifact@v3
         with:
-          name: test_package
+          name: test_package_node_${{ inputs.node_major }}
           path: testing
 
       - name: Download action
@@ -101,7 +101,7 @@ jobs:
       - name: Download test folder
         uses: actions/download-artifact@v3
         with:
-          name: test_package
+          name: test_package_node_${{ inputs.node_major }}
           path: testing
 
       - name: Get Cache Key

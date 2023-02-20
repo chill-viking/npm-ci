@@ -47,8 +47,16 @@ jobs:
 
   create-package:
     runs-on: ubuntu-latest
-    name: init test package and upload action
+    name: init test package
+    strategy:
+      matrix:
+        node-version: [14, 16, 18]
     steps:
+      - name: "Use Node.js (${{ matrix.node-version }}.x)"
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}.x
+
       - name: Create test package
         run: |
           mkdir testing
@@ -60,9 +68,13 @@ jobs:
       - name: Upload testing as artifact
         uses: actions/upload-artifact@v3
         with:
-          name: test_package
+          name: test_package_node_${{ matrix.node-version }}
           path: testing
 
+  prepare-action:
+    runs-on: ubuntu-latest
+    name: upload action
+    steps:
       - name: Checkout latest version of action
         uses: actions/checkout@v3
         with:
@@ -77,6 +89,8 @@ jobs:
   test-action:
     needs:
       - create-package
+      - prepare-action
+      - clear-cache
     name: test action
     # create a matrix of node versions to test against
     strategy:
