@@ -180,7 +180,7 @@ jobs:
             $initialTitle = ":warning:"
           }
 
-          Write-Output "## ${initialTitle} Times for node ${{ inputs.node_major }}.x on ${{ inputs.runs_on }}" >> $env:GITHUB_STEP_SUMMARY
+          Write-Output "## ${initialTitle} ${{ inputs.runs_on }} using node ${{ inputs.node_major }}.x" >> $env:GITHUB_STEP_SUMMARY
           Write-Output "| Step | Duration |" >> $env:GITHUB_STEP_SUMMARY
           Write-Output "| --- | --- |" >> $env:GITHUB_STEP_SUMMARY
           Write-Output "| pre-cache | ${preCacheDuration}ms |" >> $env:GITHUB_STEP_SUMMARY
@@ -193,6 +193,6 @@ jobs:
         run: |
           $preCacheDuration = [Float]::Parse("${{ needs.pre-cache-run.outputs.duration_ms }}")
 
-          Write-Output "## :white_check_mark: used cache on first attempt" >> $env:GITHUB_STEP_SUMMARY
+          Write-Output "## :white_check_mark:  ${{ inputs.runs_on }} using node ${{ inputs.node_major }}.x used cache" >> $env:GITHUB_STEP_SUMMARY
           Write-Output "" >> $env:GITHUB_STEP_SUMMARY
           Write-Output "Completed in ${preCacheDuration}ms" >> $env:GITHUB_STEP_SUMMARY
