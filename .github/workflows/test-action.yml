@@ -9,6 +9,7 @@ on: # yamllint disable-line rule:truthy
     branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, closed]
   schedule:
     - cron: "30 5,17 * * *"
 
@@ -49,6 +50,7 @@ jobs:
   create-package:
     runs-on: ubuntu-latest
     name: init test package
+    if: github.event.action != 'closed'
     strategy:
       matrix:
         node-version: [14, 16, 18]
@@ -75,6 +77,7 @@ jobs:
   prepare-action:
     runs-on: ubuntu-latest
     name: upload action
+    if: github.event.action != 'closed'
     steps:
       - name: Checkout latest version of action
         uses: actions/checkout@v3
@@ -93,6 +96,7 @@ jobs:
       - prepare-action
       - clear-cache
     name: test action
+    if: github.event.action != 'closed'
     # create a matrix of node versions to test against
     strategy:
       max-parallel: 5
