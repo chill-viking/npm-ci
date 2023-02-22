@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/chill-viking/npm-ci/compare/v1.1.1...v1.2.0) (2023-02-22)
+
+
+### Features
+
+* **action:** add output `restored_from_cache` ([#17](https://github.com/chill-viking/npm-ci/issues/17)) ([d732fc2](https://github.com/chill-viking/npm-ci/commit/d732fc2475b8275fcb0731c6bfe7dfc9681a1644))
+
 ## [1.1.1](https://github.com/chill-viking/npm-ci/compare/v1.1.0...v1.1.1) (2023-02-12)
 
 
