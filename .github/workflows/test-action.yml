@@ -9,35 +9,76 @@ on: # yamllint disable-line rule:truthy
     branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, closed]
   schedule:
     - cron: "30 5,17 * * *"
 
-permissions:
-  contents: write
+permissions: write-all
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
 
 jobs:
+  clear-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Cleanup
+        if: github.event_name == 'pull_request'
+        run: |
+          gh extension install actions/gh-actions-cache
+
+          REPO=${{ github.repository }}
+
+          echo "Fetching list of cache key"
+          cacheKeysForPR=$(gh actions-cache list -R $REPO | cut -f 1 )
+
+          ## Setting this to not fail the workflow while deleting cache keys.
+          set +e
+          echo "Deleting caches..."
+          for cacheKey in $cacheKeysForPR
+          do
+            gh actions-cache delete "$cacheKey" -R $REPO --confirm
+          done
+          echo "Done"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   create-package:
     runs-on: ubuntu-latest
-    name: init test package and upload action
+    name: init test package
+    if: github.event.action != 'closed'
+    strategy:
+      matrix:
+        node-version: [14, 16, 18]
     steps:
+      - name: "Use Node.js (${{ matrix.node-version }}.x)"
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}.x
+
       - name: Create test package
         run: |
           mkdir testing
           cd testing
           npm init -y
-          npm install --save-dev @chill-viking/layout
+          npm install --save @chill-viking/layout
           rm -rf node_modules
 
       - name: Upload testing as artifact
         uses: actions/upload-artifact@v3
         with:
-          name: test_package
+          name: test_package_node_${{ matrix.node-version }}
           path: testing
 
+  prepare-action:
+    runs-on: ubuntu-latest
+    name: upload action
+    if: github.event.action != 'closed'
+    steps:
       - name: Checkout latest version of action
         uses: actions/checkout@v3
         with:
@@ -52,7 +93,10 @@ jobs:
   test-action:
     needs:
       - create-package
+      - prepare-action
+      - clear-cache
     name: test action
+    if: github.event.action != 'closed'
     # create a matrix of node versions to test against
     strategy:
       max-parallel: 5

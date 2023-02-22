@@ -14,6 +14,11 @@ inputs:
     description: "Working directory to use"
     default: "./"
 
+outputs:
+  restored_from_cache:
+    description: "True if dependencies were restored from cache"
+    value: ${{ steps.cache-node.outputs.cache-hit }}
+
 runs:
   using: "composite"
   steps:
