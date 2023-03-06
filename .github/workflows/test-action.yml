@@ -23,8 +23,7 @@ concurrency:
 jobs:
   clear-cache:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    permissions: write-all
     steps:
       - name: Check out code
         uses: actions/checkout@v3
