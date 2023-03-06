@@ -57,4 +57,5 @@ runs:
 
     - shell: pwsh
       name: Install dependencies
+      working-directory: ${{ steps.working_directory.outputs.path }}
       run: npm ci
