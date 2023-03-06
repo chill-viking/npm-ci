@@ -28,11 +28,6 @@ jobs:
       duration_ms: ${{ steps.timer-end.outputs.duration_ms }}
       used_cache: ${{ steps.test-run.outputs.restored_from_cache }}
     steps:
-      - name: "Use Node.js (${{ inputs.node_major }}.x)"
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ inputs.node_major }}.x
-
       - name: Download test folder
         uses: actions/download-artifact@v3
         with:
@@ -58,6 +53,7 @@ jobs:
         uses: ./npm-ci # Use action from local folder
         with:
           working_directory: testing
+          node_version: ${{ inputs.node_major }}
 
       - name: end timer
         id: timer-end
@@ -89,15 +85,9 @@ jobs:
     needs:
       - pre-cache-run
     name: "cache run"
-    if: ${{ needs.pre-cache-run.outputs.used_cache != 'true' }}
     outputs:
       duration_ms: ${{ steps.timer-end.outputs.duration_ms }}
     steps:
-      - name: "Use Node.js (${{ inputs.node_major }}.x)"
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ inputs.node_major }}.x
-
       - name: Download test folder
         uses: actions/download-artifact@v3
         with:
@@ -129,6 +119,7 @@ jobs:
         uses: ./npm-ci # Use action from local folder
         with:
           working_directory: testing
+          node_version: ${{ inputs.node_major }}
 
       - name: end timer
         id: timer-end
@@ -164,7 +155,6 @@ jobs:
     if: always()
     steps:
       - name: Compare times
-        if: ${{ needs.pre-cache-run.outputs.used_cache != 'true' }}
         shell: pwsh
         run: |
           $preCacheDuration = [Float]::Parse("${{ needs.pre-cache-run.outputs.duration_ms }}")
@@ -186,13 +176,3 @@ jobs:
           Write-Output "| pre-cache | ${preCacheDuration}ms |" >> $env:GITHUB_STEP_SUMMARY
           Write-Output "| post-cache | ${postCacheDuration}ms |" >> $env:GITHUB_STEP_SUMMARY
           Write-Output "| difference | ${diffPercent}% ${diffTitle} |" >> $env:GITHUB_STEP_SUMMARY
-
-      - name: Compare times
-        if: ${{ needs.pre-cache-run.outputs.used_cache == 'true' }}
-        shell: pwsh
-        run: |
-          $preCacheDuration = [Float]::Parse("${{ needs.pre-cache-run.outputs.duration_ms }}")
-
-          Write-Output "## :white_check_mark:  ${{ inputs.runs_on }} using node ${{ inputs.node_major }}.x used cache" >> $env:GITHUB_STEP_SUMMARY
-          Write-Output "" >> $env:GITHUB_STEP_SUMMARY
-          Write-Output "Completed in ${preCacheDuration}ms" >> $env:GITHUB_STEP_SUMMARY

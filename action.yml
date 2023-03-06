@@ -13,11 +13,12 @@ inputs:
   working_directory:
     description: "Working directory to use"
     default: "./"
-
-outputs:
-  restored_from_cache:
-    description: "True if dependencies were restored from cache"
-    value: ${{ steps.cache-node.outputs.cache-hit }}
+  node_version:
+    description: "Node version to use"
+    default: "18"
+  architecture:
+    description: "Architecture to use"
+    default: "x64"
 
 runs:
   using: "composite"
@@ -44,48 +45,16 @@ runs:
           Write-Output "::error title='package-lock.json' not found::Could not find package-lock.json in '${input}', adjust working_directory input."
           exit 1
         }
-    - name: Prepare hash
-      id: package_lock_hash
-      shell: pwsh
-      working-directory: ${{ steps.working_directory.outputs.path }}
-      run: |
-        $hash = Get-FileHash "package-lock.json" -Algorithm SHA256
-        Write-Output "Hashed package-lock.json"
-        Write-Output ".Hash $hash.Hash"
-        $output = $hash.Hash
-        Write-Output "hash=${output}" >> $env:GITHUB_OUTPUT
 
-    - name: Use node_modules from cache [npm]
-      id: cache-node
-      uses: actions/cache@v3
-      env:
-        cache-name: cache-node-modules
+    - uses: actions/setup-node@v3
+      name: "Setup Node ${{ inputs.node_version }} w/ Cache"
+      id: setup-node
       with:
-        # caching node_modules
-        path: ${{ steps.working_directory.outputs.path }}node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ steps.package_lock_hash.outputs.hash }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
+        node-version: ${{ inputs.node_version }}
+        architecture: ${{ inputs.architecture }}
+        cache: 'npm'
+        cache-dependency-path: ${{ steps.working_directory.outputs.path }}package-lock.json
 
     - shell: pwsh
       name: Install dependencies
-      working-directory: ${{ steps.working_directory.outputs.path }}
-      if: steps.cache-node.outputs.cache-hit != 'true'
-      run: |
-        npm ci
-
-    - shell: pwsh
-      name: Check path for cache
-      if: steps.cache-node.outputs.cache-hit != 'true'
-      run: |
-        # Check if node_modules is cached
-        if (Test-Path ${{ steps.working_directory.outputs.path }}node_modules)
-        {
-          Write-Output "node_modules found, should be cached"
-        }
-        else
-        {
-          Write-Output "::warning title=node_modules not found::node_modules not found using path '${{ steps.working_directory.outputs.path }}'"
-        }
+      run: npm ci
