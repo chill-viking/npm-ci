@@ -36,7 +36,7 @@ runs:
         # Check if package-lock.json exists in working directory
         if (Test-Path "${input}package-lock.json")
         {
-          Write-Output "package-lock.json found in working_directory '${input}'"                
+          Write-Output "package-lock.json found in working_directory '${input}'"
           Write-Output "path=${input}"
         }
         else
