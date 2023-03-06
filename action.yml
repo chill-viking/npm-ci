@@ -51,8 +51,9 @@ runs:
       run: |
         $hash = Get-FileHash "package-lock.json" -Algorithm SHA256
         Write-Output "Hashed package-lock.json"
-        Write-Output $hash
-        Write-Output "hash=${hash.Hash}" >> $env:GITHUB_OUTPUT
+        Write-Output ".Hash $hash.Hash"
+        $output = $hash.Hash
+        Write-Output "hash=${output}" >> $env:GITHUB_OUTPUT
 
     - name: Use node_modules from cache [npm]
       id: cache-node
