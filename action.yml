@@ -44,6 +44,15 @@ runs:
           Write-Output "::error title='package-lock.json' not found::Could not find package-lock.json in '${input}', adjust working_directory input."
           exit 1
         }
+    - name: Prepare hash
+      id: package_lock_hash
+      shell: pwsh
+      working-directory: ${{ steps.working_directory.outputs.path }}
+      run: |
+        $hash = Get-FileHash "package-lock.json" -Algorithm SHA256
+        Write-Output "Hashed package-lock.json"
+        Write-Output $hash
+        Write-Output "hash=${hash.Hash}" >> $env:GITHUB_OUTPUT
 
     - name: Use node_modules from cache [npm]
       id: cache-node
@@ -53,7 +62,7 @@ runs:
       with:
         # caching node_modules
         path: ${{ steps.working_directory.outputs.path }}node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('${{ steps.working_directory.outputs.path }}/package-lock.json') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ steps.package_lock_hash.outputs.hash }}
         restore-keys: |
           ${{ runner.os }}-build-${{ env.cache-name }}-
           ${{ runner.os }}-build-
