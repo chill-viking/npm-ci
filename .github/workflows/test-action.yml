@@ -68,6 +68,7 @@ jobs:
           cd testing
           npm init -y
           npm install --save @chill-viking/layout
+          npm install --save-dev @angular/cli
           rm -rf node_modules
 
       - name: Upload testing as artifact
