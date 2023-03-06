@@ -53,7 +53,7 @@ runs:
       with:
         # caching node_modules
         path: ${{ steps.working_directory.outputs.path }}node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles("${{ steps.working_directory.outputs.path }}/package-lock.json") }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('${{ steps.working_directory.outputs.path }}/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-build-${{ env.cache-name }}-
           ${{ runner.os }}-build-
