@@ -30,24 +30,20 @@ runs:
         $input = "${{ inputs.working_directory }}"
         if ($input -notlike "*/")
         {
-            $input = "${input}/"
+          $input = "${input}/"
         }
 
         # Check if package-lock.json exists in working directory
         if (Test-Path "${input}package-lock.json")
         {
-            Write-Output "package-lock.json found in working_directory '${input}'"
-            Write-Output "path=${input}"
+          Write-Output "package-lock.json found in working_directory '${input}'"
+          Write-Output "path=${input}" >> $env:GITHUB_OUTPUT
         }
         else
         {
-            Write-Output "::error title='package-lock.json' not found::Could not find package-lock.json in '${input}', adjust working_directory input."
-            exit 1
+          Write-Output "::error title='package-lock.json' not found::Could not find package-lock.json in '${input}', adjust working_directory input."
+          exit 1
         }
-
-        # Create hash of package-lock.json
-        $hash = Get-FileHash "${input}package-lock.json" -Algorithm SHA256
-        Write-Output "hash=${$hash.Hash}"
 
     - name: Use node_modules from cache [npm]
       id: cache-node
@@ -57,7 +53,7 @@ runs:
       with:
         # caching node_modules
         path: ${{ steps.working_directory.outputs.path }}node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ steps.working_directory.outputs.hash }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles("${{ steps.working_directory.outputs.path }}/package-lock.json") }}
         restore-keys: |
           ${{ runner.os }}-build-${{ env.cache-name }}-
           ${{ runner.os }}-build-
