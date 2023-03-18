@@ -20,6 +20,8 @@ on: # yamllint disable-line rule:truthy
         type: string
         default: "@chill-viking"
 
+permissions: read-all
+
 jobs:
   pre-cache-run:
     runs-on: ${{ inputs.runs_on }}
