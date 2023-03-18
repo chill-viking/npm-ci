@@ -10,6 +10,8 @@ on: # yamllint disable-line rule:truthy
   schedule:
     - cron: "37 20 * * *"
 
+permissions: read-all
+
 jobs:
   stale:
     runs-on: ubuntu-latest
