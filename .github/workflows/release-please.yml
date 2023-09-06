@@ -24,7 +24,7 @@ jobs:
           token: ${{ secrets.ORG_PAT }}
           package-name: "npm-ci"
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: tag major and minor versions
         shell: pwsh
