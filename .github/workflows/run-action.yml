@@ -31,7 +31,7 @@ jobs:
       used_cache: ${{ steps.test-run.outputs.restored_from_cache }}
     steps:
       - name: "Use Node.js (${{ inputs.node_major }}.x)"
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node_major }}.x
 
@@ -96,7 +96,7 @@ jobs:
       duration_ms: ${{ steps.timer-end.outputs.duration_ms }}
     steps:
       - name: "Use Node.js (${{ inputs.node_major }}.x)"
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node_major }}.x
 
