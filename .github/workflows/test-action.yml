@@ -70,7 +70,7 @@ jobs:
           rm -rf node_modules
 
       - name: Upload testing as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test_package_node_${{ matrix.node-version }}
           path: testing
@@ -86,7 +86,7 @@ jobs:
           path: npm-ci
 
       - name: Upload action as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: npm-ci
           path: npm-ci
