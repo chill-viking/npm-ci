@@ -9,12 +9,12 @@
   ],
   "packageRules": [
     {
-      "matchPackagePatterns": [
-        "eslint"
-      ],
       "labels": [
         "linting :memo:",
         "auto :robot:"
+      ],
+      "matchPackageNames": [
+        "/eslint/"
       ]
     },
     {
