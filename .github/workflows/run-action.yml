@@ -106,12 +106,21 @@ jobs:
           name: test_package_node_${{ inputs.node_major }}
           path: testing
 
-      - name: Get Cache Key
-        id: cache-key
+      - name: Alter package-lock version
         shell: pwsh
         run: |
-          $key = "${{ inputs.runs_on }}-${{ hashFiles('**/package-lock.json') }}"
-          Write-Output "key=${key}" >> $env:GITHUB_OUTPUT
+            $packageLocks = Get-ChildItem -Path testing -Filter 'package-lock.json' -Recurse
+            foreach ($packageLock in $packageLocks)
+            {
+                $lockPath = $packageLock.FullName
+                $lockContent = Get-Content -Path $lockPath -Raw `
+                    | ConvertFrom-Json -AsHashTable
+
+                $lockContent.version = "9.9.9"
+
+                $lockContent | ConvertTo-Json -Depth 100 `
+                    | Set-Content -Path $lockPath
+            }
 
       - name: Download action
         uses: actions/download-artifact@v4
