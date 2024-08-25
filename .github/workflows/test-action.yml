@@ -54,7 +54,7 @@ jobs:
     if: github.event.action != 'closed'
     strategy:
       matrix:
-        node-version: [14, 16, 18]
+        node-version: [18, 20]
     steps:
       - name: "Use Node.js (${{ matrix.node-version }}.x)"
         uses: actions/setup-node@v4
@@ -102,17 +102,8 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        node-version: [14, 16, 18]
+        node-version: [18, 20]
         os: [ubuntu-latest, windows-latest, macos-latest]
-        exclude:
-          - os: macos-latest
-            node-version: 14
-          - os: macos-latest
-            node-version: 16
-          - os: windows-latest
-            node-version: 14
-          - os: windows-latest
-            node-version: 16
     uses: ./.github/workflows/run-action.yml
     with:
       node_major: ${{ matrix.node-version }}
