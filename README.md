@@ -4,7 +4,7 @@
 
 ## chill-viking/npm-ci
 
-This GitHub action will install npm dependencies, using cache if already cached. The cache is based on available `package-lock.json` files in source.
+This GitHub action will install npm dependencies, using cache if already cached. The cache is based on packages found in `package-lock.json` files in source, which are stored as `packages-only-lock.json` over the course of the action.
 
 Will log a warning if `node_modules` folder is not found after installing the dependencies.
 

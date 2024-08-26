@@ -37,16 +37,37 @@ runs:
           Write-Output "path=${input}" >> $env:GITHUB_OUTPUT
         }
 
+    - name: Create packages-only packge-lock
+      shell: pwsh
+      run: |
+        $packageLocks = Get-ChildItem -Path ${{ steps.working_directory.outputs.path }} -Filter 'package-lock.json' -Recurse
+        foreach ($packageLock in $packageLocks)
+        {
+          $lockDirectory = $packageLock.Directory.FullName
+          $lockPath = $packageLock.FullName
+          $lockContent = Get-Content -Path $lockPath -Raw `
+            | ConvertFrom-Json -AsHashTable
+
+          $packagesOnly = @{
+            packages = $lockContent.packages
+          }
+
+          Write-Output "$lockPath -> $lockDirectory/packages-only-lock.json"
+          $packagesOnly | ConvertTo-Json -Depth 100 `
+            | Set-Content -Path "$lockDirectory/packages-only-lock.json"
+        }
+
     - name: Use node_modules from cache [npm]
       id: cache-node
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       env:
         cache-name: cache-node-modules
       with:
         # caching node_modules
         path: ${{ steps.working_directory.outputs.path }}node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**//packages-only-lock.json') }}
         restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
           ${{ runner.os }}-build-${{ env.cache-name }}-
           ${{ runner.os }}-build-
           ${{ runner.os }}-
@@ -57,6 +78,12 @@ runs:
       if: steps.cache-node.outputs.cache-hit != 'true'
       run: |
         npm ci
+
+    - shell: pwsh
+      name: Clear package only lock files
+      run: |
+        Get-ChildItem -Path ${{ steps.working_directory.outputs.path }} -Filter 'packages-only-lock.json' -Recurse `
+          | Remove-Item
 
     - shell: pwsh
       name: Check path for cache

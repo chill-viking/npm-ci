@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0](https://github.com/chill-viking/npm-ci/compare/v1.2.0...v1.3.0) (2024-08-25)
+
+
+### Features
+
+* **action:** use packages for primary cache key ([fa5f6ca](https://github.com/chill-viking/npm-ci/commit/fa5f6cac57f0c7982806d570d264529b1e0942f4))
+
+
+### Bug Fixes
+
+* **action:** update to use `v4` cache action ([1ce27a0](https://github.com/chill-viking/npm-ci/commit/1ce27a083b89603d4d0b51de6d8151044c328a24))
+* **workflows:** update release workflow ([b32d712](https://github.com/chill-viking/npm-ci/commit/b32d71214a42497d3252c6ce5ac4e97e902c57c1))
+
 ## [1.2.0](https://github.com/chill-viking/npm-ci/compare/v1.1.1...v1.2.0) (2023-02-22)
 
 
