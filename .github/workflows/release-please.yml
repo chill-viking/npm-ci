@@ -23,7 +23,7 @@ jobs:
           release-type: node
           token: ${{ secrets.ORG_PAT }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: tag major and minor versions
         shell: pwsh
