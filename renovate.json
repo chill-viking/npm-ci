@@ -31,11 +31,10 @@
     "before 2am"
   ],
   "configMigration": true,
-  "dependencyDashboardTitle": "chore(deps): dependency dashboard",
-  "dependencyDashboardLabels": [
-    "dependencies :scroll:",
-    "auto :robot:"
-  ],
+  "dependencyDashboard": {
+    "title": "chore(deps): dependency dashboard",
+    "labels": ["dependencies :scroll:", "auto :robot:"]
+  },
   "automerge": true,
   "platformAutomerge": true,
   "automergeStrategy": "rebase"
